@@ -3,6 +3,8 @@
 
 # Keep gitignore itself tracked
 !/.gitignore
+!/README.md
+!/LICENSE
 
 # Keep only the tutorial folder tracked
 !/Logistic Regression Interactive Tutorial/
