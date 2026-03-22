@@ -1,0 +1,9 @@
+# Ignore everything by default
+/*
+
+# Keep gitignore itself tracked
+!/.gitignore
+
+# Keep only the tutorial folder tracked
+!/Logistic Regression Interactive Tutorial/
+!/Logistic Regression Interactive Tutorial/**
