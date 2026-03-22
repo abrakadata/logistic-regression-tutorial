@@ -7,5 +7,5 @@
 !/LICENSE
 
 # Keep only the tutorial folder tracked
-!/Logistic Regression Interactive Tutorial/
-!/Logistic Regression Interactive Tutorial/**
+!/Logistic Regression Tutorial/
+!/Logistic Regression Tutorial/**
