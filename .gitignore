@@ -5,6 +5,9 @@
 !/.gitignore
 !/README.md
 !/LICENSE
+!/.github/
+!/.github/workflows/
+!/.github/workflows/**
 
 # Keep only the tutorial folder tracked
 !/Logistic Regression Tutorial/
