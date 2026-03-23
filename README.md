@@ -28,3 +28,14 @@ An interactive, from-scratch tutorial that teaches Logistic Regression using:
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## Workspace Boundary Notes
+
+- This repository is intentionally separate from `AI-Thinking-Class`.
+- The `Broward HOUSING Prices` folder is an independent nested repository and should be managed from its own root.
+- Keep commits scoped to this repository only.
+
+## Python Environment Notes
+
+- Use a single shared workspace environment at `../.venv` for general training and tutorial work.
+- Use a project-specific environment only when dependencies differ materially.

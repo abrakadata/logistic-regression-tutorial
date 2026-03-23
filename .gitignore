@@ -12,3 +12,7 @@
 # Keep only the tutorial folder tracked
 !/Logistic Regression Tutorial/
 !/Logistic Regression Tutorial/**
+
+# Ignore Python cache in tracked tutorial files
+Logistic Regression Tutorial/__pycache__/
+Logistic Regression Tutorial/**/*.py[cod]
