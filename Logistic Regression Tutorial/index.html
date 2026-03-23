@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Logistic Regression From Scratch</title>
+<title>Logistic Regression</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -159,14 +159,6 @@ padding: 1.6rem;
 margin-bottom: 1.3rem;
 box-shadow: 0 10px 28px rgba(26,16,8,.08);
 }
-.home-kicker {
-font-family: 'JetBrains Mono', monospace;
-font-size: .72rem;
-letter-spacing: .14em;
-text-transform: uppercase;
-color: var(--accent2);
-margin-bottom: .55rem;
-}
 .home-title {
 font-family: 'Open Sans', sans-serif;
 font-size: 2.25rem;
@@ -291,7 +283,7 @@ border-radius: 0 6px 6px 0;
 .callout.success { border-color: var(--accent3); background: #eafaf1; }
 .callout .label {
 font-family: ‘JetBrains Mono’, monospace;
-font-size: .7rem;
+font-size: .9rem;
 letter-spacing: .15em;
 text-transform: uppercase;
 font-weight: 600;
@@ -498,26 +490,6 @@ gap: 1rem;
 .worked .step-line .label { color: var(--muted); min-width: 160px; }
 .worked .step-line .value { color: var(--ink); font-weight: 600; }
 
-/* ── GRADIENT VISUAL ── */
-.gradient-visual {
-display: grid;
-grid-template-columns: repeat(5, 1fr);
-gap: .5rem;
-margin: 1.5rem 0;
-}
-.grad-cell {
-aspect-ratio: 1;
-border-radius: 6px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-font-family: ‘JetBrains Mono’, monospace;
-font-size: .7rem;
-color: white;
-text-shadow: 0 1px 3px rgba(0,0,0,.5);
-}
-
 /* ── TRAINING VIZ ── */
 #trainingChart {
 width: 100%;
@@ -585,7 +557,7 @@ background: linear-gradient(135deg, var(--highlight), var(--paper));
 }
 .analogy .analogy-label {
 font-family: ‘JetBrains Mono’, monospace;
-font-size: .7rem;
+font-size: .9rem;
 letter-spacing: .2em;
 color: var(--gold);
 text-transform: uppercase;
@@ -671,7 +643,7 @@ h2 { font-size: 1.5rem; }
 
 <header>
 <div class="kicker">A Ground-Up Tutorial</div>
-<h1>Logistic Regression — From Scratch</h1>
+<h1>Logistic Regression</h1>
 <p>Will our student pass or fail? Let's build a model to find out — step by step, no prior math assumed.</p>
 </header>
 
@@ -694,7 +666,7 @@ LANDING PAGE — HOME
 
 <section class="section active" id="home">
 <div class="home-hero">
-<h2 class="home-title">Logistic Regression — From Scratch</h2>
+<h2 class="home-title">Logistic Regression</h2>
 <p class="home-subtitle">This tutorial gives you the intuition, the math, and the practical workflow for binary classification. You will move from concept to prediction with real examples and interactive visuals.</p>
 <div class="home-meta">
 <div class="home-meta-chip" id="homeSectionsChip">10 Sections</div>
@@ -1282,7 +1254,7 @@ SECTION 8 — FULL PICTURE
 <h3>Python Implementation From Scratch</h3>
 <p>Here's the entire model in clean Python — no external libraries, no magic. Just the math we walked through:</p>
 
-<pre><span class="comment"># Logistic Regression From Scratch
+<pre><span class="comment"># Logistic Regression
 # Predicting student pass/fail</span>
 
 <span class="kw">import</span> math
@@ -1762,11 +1734,14 @@ const W=c.width, H=c.height;
 ctx.clearRect(0,0,W,H);
 ctx.fillStyle='#f2ebdc'; ctx.fillRect(0,0,W,H);
 
-if(lossHistory.length<2) return;
 const pad={l:55,r:20,t:20,b:35};
-const maxLoss=Math.max(...lossHistory)*1.1;
+const maxHistoryLoss=lossHistory.length ? Math.max(...lossHistory) : 1;
+const maxLoss=Math.max(1, maxHistoryLoss*1.1);
 const iW=W-pad.l-pad.r, iH=H-pad.t-pad.b;
-function px(i){return pad.l+i/(lossHistory.length-1)*iW;}
+function px(i){
+const denom=Math.max(1, lossHistory.length-1);
+return pad.l+i/denom*iW;
+}
 function py(v){return pad.t+(1-v/maxLoss)*iH;}
 
 // Grid
@@ -1777,6 +1752,42 @@ ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
 const v=(1-i/5)*maxLoss;
 ctx.fillStyle='#8b7355'; ctx.font='10px JetBrains Mono';
 ctx.fillText(v.toFixed(2), 5, y+4);
+}
+
+// Axes and zero baseline
+ctx.strokeStyle='#8b7355';
+ctx.lineWidth=1.5;
+ctx.beginPath();
+ctx.moveTo(pad.l, pad.t);
+ctx.lineTo(pad.l, H-pad.b);
+ctx.moveTo(pad.l, H-pad.b);
+ctx.lineTo(W-pad.r, H-pad.b);
+ctx.stroke();
+
+ctx.strokeStyle='rgba(39,174,96,0.75)';
+ctx.lineWidth=1.5;
+ctx.setLineDash([5,4]);
+ctx.beginPath();
+ctx.moveTo(pad.l, py(0));
+ctx.lineTo(W-pad.r, py(0));
+ctx.stroke();
+ctx.setLineDash([]);
+
+ctx.fillStyle='#27ae60';
+ctx.font='10px JetBrains Mono';
+ctx.fillText('0.00', 5, py(0)+4);
+ctx.fillText('zero baseline', pad.l+8, py(0)-6);
+
+if(lossHistory.length<2) {
+ctx.fillStyle='#8b7355';
+ctx.font='11px JetBrains Mono';
+ctx.fillText('Epoch', W/2-16, H-8);
+ctx.save();
+ctx.translate(16, H/2);
+ctx.rotate(-Math.PI/2);
+ctx.fillText('Loss', 0, 0);
+ctx.restore();
+return;
 }
 
 // Loss curve
@@ -1792,6 +1803,8 @@ ctx.fillStyle='#8b7355'; ctx.font='11px JetBrains Mono';
 ctx.fillText(`Epoch ${epochNum}`, W-90, pad.t+15);
 ctx.fillStyle='#c0392b';
 ctx.fillText('Loss', pad.l+8, pad.t+15);
+ctx.fillStyle='#8b7355';
+ctx.fillText('Epoch', W/2-16, H-8);
 }
 
 function startTraining(){
