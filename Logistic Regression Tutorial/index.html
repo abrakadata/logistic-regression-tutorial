@@ -864,7 +864,7 @@ SECTION 2 — WHY NOT LINEAR REGRESSION
 <h3>Problem 1: Outputs That Don't Make Sense</h3>
 <p>A straight line has no limits. It can produce outputs like 1.7, 3.4, or −0.5. But probabilities must be <strong>between 0 and 1</strong>. What does a probability of 1.7 or −0.5 mean? Nothing. It's mathematically invalid.</p>
 
-<canvas id="linearProblem" width="700" height="250" class="canvas-full"></canvas>
+<canvas id="linearProblem" width="700" height="340" class="canvas-full"></canvas>
 
 <h3>Problem 2: The Decision Boundary Breaks Down</h3>
 <p>Suppose a student studies 50 hours per week (an extreme outlier who aces everything). A straight line would be "pulled" toward this extreme point and start predicting that students with moderate attendance have a <em>lower</em> chance of passing — which is backward.</p>
@@ -1514,12 +1514,19 @@ ctx.setLineDash([]);
 ctx.fillStyle = '#27ae60';
 ctx.font = '11px JetBrains Mono';
 ctx.fillText('1.0 (max valid)', 65, py(1)-4);
-ctx.fillText('0.0 (min valid)', 65, py(0)+14);
+ctx.fillText('0.0 (min valid)', 65, py(0)+24);
 
 ctx.fillStyle = '#c0392b';
 ctx.font = '11px JetBrains Mono';
 ctx.fillText('⚠ Invalid values!', px(22), py(1.3));
-ctx.fillText('⚠ Negative probabilities!', px(22), py(-0.08));
+const negProbText = '⚠ Negative probabilities!';
+const negProbX = px(28);
+const negProbY = py(-0.14);
+const negProbWidth = ctx.measureText(negProbText).width;
+ctx.fillStyle = 'rgba(250,246,239,0.95)';
+ctx.fillRect(negProbX - 6, negProbY - 11, negProbWidth + 12, 16);
+ctx.fillStyle = '#c0392b';
+ctx.fillText(negProbText, negProbX, negProbY);
 
 // Points
 pts.forEach(([x,y]) => {
