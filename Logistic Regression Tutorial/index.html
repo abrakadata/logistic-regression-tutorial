@@ -24,6 +24,7 @@
 --highlight: #fff9e6;
 --code-bg: #2c2416;
 --code-fg: #f2d06b;
+--nav-width: 200px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,6 +35,7 @@ color: var(--ink);
 font-family: ‘Open Sans’, sans-serif;
 font-size: 17px;
 line-height: 1.8;
+padding-left: var(--nav-width);
 }
 
 /* ── HEADER ── */
@@ -47,6 +49,15 @@ justify-content: center;
 gap: 1.25rem;
 position: relative;
 overflow: hidden;
+transition: opacity .2s ease, transform .2s ease, max-height .2s ease, padding .2s ease;
+}
+header.header-hidden {
+opacity: 0;
+transform: translateY(-100%);
+max-height: 0;
+padding-top: 0;
+padding-bottom: 0;
+pointer-events: none;
 }
 header::before {
 content: '';
@@ -85,21 +96,31 @@ display: none;
 /* ── NAV ── */
 nav {
 background: var(--cream);
-border-bottom: 2px solid var(--border);
-padding: .75rem 1.5rem;
+border-right: 2px solid var(--border);
+padding: .7rem;
 display: flex;
-gap: .5rem;
-flex-wrap: wrap;
-justify-content: center;
-position: sticky;
+gap: .4rem;
+flex-direction: column;
+align-items: stretch;
+justify-content: flex-start;
+position: fixed;
 top: 0;
-z-index: 100;
+left: 0;
+bottom: 0;
+width: var(--nav-width);
+overflow-y: auto;
+z-index: 200;
+transition: top .2s ease;
+}
+
+@media (min-width: 901px) {
+nav.nav-under-header { top: var(--header-height, 0px); }
 }
 nav button {
 font-family: ‘JetBrains Mono’, monospace;
-font-size: .72rem;
+font-size: .7rem;
 letter-spacing: .05em;
-padding: .4rem .9rem;
+padding: .5rem .65rem;
 border: 1.5px solid var(--border);
 background: var(--paper);
 color: var(--muted);
@@ -107,6 +128,10 @@ border-radius: 3px;
 cursor: pointer;
 transition: all .2s;
 white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+text-align: left;
+width: 100%;
 }
 nav button:hover, nav button.active {
 background: var(--ink);
@@ -124,6 +149,103 @@ animation: fadeIn .35s ease;
 }
 .section.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ── HOME LANDING ── */
+.home-hero {
+background: linear-gradient(145deg, #fffdf8, #f3ebdc);
+border: 2px solid var(--border);
+border-radius: 14px;
+padding: 1.6rem;
+margin-bottom: 1.3rem;
+box-shadow: 0 10px 28px rgba(26,16,8,.08);
+}
+.home-kicker {
+font-family: 'JetBrains Mono', monospace;
+font-size: .72rem;
+letter-spacing: .14em;
+text-transform: uppercase;
+color: var(--accent2);
+margin-bottom: .55rem;
+}
+.home-title {
+font-family: 'Open Sans', sans-serif;
+font-size: 2.25rem;
+line-height: 1.15;
+margin-bottom: .7rem;
+color: var(--ink);
+}
+.home-subtitle {
+font-size: 1.05rem;
+max-width: 62ch;
+margin-bottom: 0;
+}
+.home-meta {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: .6rem;
+margin-top: 1rem;
+}
+.home-meta-chip {
+background: rgba(255,255,255,.9);
+border: 1.5px solid var(--border);
+border-radius: 999px;
+padding: .4rem .65rem;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: .35rem;
+font-family: 'JetBrains Mono', monospace;
+font-size: .67rem;
+letter-spacing: .06em;
+text-transform: uppercase;
+color: var(--muted);
+}
+.home-grid {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: .9rem;
+margin: 1.25rem 0;
+}
+.home-item {
+background: #fff;
+border: 1.5px solid var(--border);
+border-radius: 10px;
+padding: .95rem 1rem;
+}
+.home-item-label {
+font-family: 'JetBrains Mono', monospace;
+font-size: .68rem;
+letter-spacing: .12em;
+text-transform: uppercase;
+color: var(--muted);
+margin-bottom: .3rem;
+}
+.home-item p { margin-bottom: 0; }
+.home-cta {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 1rem;
+background: var(--ink);
+color: var(--paper);
+border-radius: 12px;
+padding: 1rem 1.15rem;
+margin-top: 1.1rem;
+}
+.home-cta p {
+margin: 0;
+font-size: .95rem;
+color: #e7ddcc;
+}
+.home-cta .btn-nav {
+border-color: var(--gold);
+color: var(--gold);
+background: transparent;
+}
+.home-cta .btn-nav:hover {
+background: var(--gold);
+color: var(--ink);
+}
 
 /* ── TYPOGRAPHY ── */
 h2 {
@@ -489,10 +611,54 @@ canvas { border-radius: 6px; }
 #predDetails { font-family: 'JetBrains Mono', monospace; font-size: .8rem; color: var(--muted); margin: .5rem 0; min-height: 1.5rem; }
 #weightDisplay { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 
+@media (max-width: 900px) {
+body { padding-left: 0; }
+nav {
+border-right: none;
+border-bottom: 2px solid var(--border);
+padding: .65rem .85rem;
+gap: .4rem;
+flex-wrap: nowrap;
+flex-direction: row;
+align-items: center;
+justify-content: flex-start;
+position: sticky;
+top: 0;
+left: auto;
+bottom: auto;
+width: auto;
+overflow-x: auto;
+overflow-y: hidden;
+z-index: 100;
+}
+nav button {
+white-space: nowrap;
+overflow: visible;
+text-overflow: clip;
+text-align: center;
+width: auto;
+flex: 0 0 auto;
+}
+}
+
 @media (max-width: 600px) {
+nav {
+padding: .5rem .6rem;
+gap: .35rem;
+}
+nav button {
+font-size: .66rem;
+padding: .5rem .7rem;
+min-height: 2.2rem;
+}
 .step-block { flex-direction: column; }
 .slider-row { flex-wrap: wrap; }
 .slider-row label { min-width: 100%; }
+.section { padding: 2.25rem 1rem 3rem; }
+.home-title { font-size: 1.75rem; }
+.home-meta { grid-template-columns: 1fr; }
+.home-grid { grid-template-columns: 1fr; }
+.home-cta { flex-direction: column; align-items: flex-start; }
 h2 { font-size: 1.5rem; }
 .formula-box { padding: 1rem; font-size: .95rem; }
 .worked .step-line { flex-direction: column; gap: .1rem; }
@@ -510,22 +676,64 @@ h2 { font-size: 1.5rem; }
 </header>
 
 <nav id="mainNav">
-<button onclick="showSection(0)" class="active">① The Problem</button>
-<button onclick="showSection(1)">② Linear Math Refresher</button>
-<button onclick="showSection(2)">③ Why Not Linear Regression?</button>
-<button onclick="showSection(3)">④ The Sigmoid Function</button>
-<button onclick="showSection(4)">⑤ Building the Model</button>
-<button onclick="showSection(5)">⑥ Making Predictions</button>
-<button onclick="showSection(6)">⑦ How the Model Learns</button>
-<button onclick="showSection(7)">⑧ Live Training Demo</button>
-<button onclick="showSection(8)">⑨ Full Picture</button>
+<button onclick="showSection(0)" class="active">Home</button>
+<button onclick="showSection(1)">The Problem</button>
+<button onclick="showSection(2)">Linear Math Refresher</button>
+<button onclick="showSection(3)">Why Not Linear Regression?</button>
+<button onclick="showSection(4)">The Sigmoid Function</button>
+<button onclick="showSection(5)">Building the Model</button>
+<button onclick="showSection(6)">Making Predictions</button>
+<button onclick="showSection(7)">How the Model Learns</button>
+<button onclick="showSection(8)">Live Training Demo</button>
+<button onclick="showSection(9)">Full Picture</button>
 </nav>
+
+<!-- ═══════════════════════════════════════════════
+LANDING PAGE — HOME
+═══════════════════════════════════════════════ -->
+
+<section class="section active" id="home">
+<div class="home-hero">
+<h2 class="home-title">Logistic Regression — From Scratch</h2>
+<p class="home-subtitle">This tutorial gives you the intuition, the math, and the practical workflow for binary classification. You will move from concept to prediction with real examples and interactive visuals.</p>
+<div class="home-meta">
+<div class="home-meta-chip" id="homeSectionsChip">10 Sections</div>
+<div class="home-meta-chip" id="homeDurationChip">35-45 Minutes</div>
+<div class="home-meta-chip">Beginner Friendly</div>
+</div>
+</div>
+
+<div class="home-grid">
+<article class="home-item">
+<div class="home-item-label">Concept</div>
+<p>Learn why Logistic Regression is built for yes/no outcomes like PASS or FAIL.</p>
+</article>
+<article class="home-item">
+<div class="home-item-label">Math</div>
+<p>Break down weighted sums, sigmoid, and threshold decisions in plain language.</p>
+</article>
+<article class="home-item">
+<div class="home-item-label">Training</div>
+<p>See how loss and gradient descent adjust weights to improve predictions.</p>
+</article>
+<article class="home-item">
+<div class="home-item-label">Practice</div>
+<p>Use sliders, charts, and a live demo to test your understanding in real time.</p>
+</article>
+</div>
+
+<div class="home-cta">
+<p>Recommended flow: start at The Problem, then move section by section for the smoothest learning path.</p>
+<button class="btn-nav" onclick="showSection(1)">Start Learning →</button>
+</div>
+
+</section>
 
 <!-- ═══════════════════════════════════════════════
 SECTION 0 — THE PROBLEM
 ═══════════════════════════════════════════════ -->
 
-<section class="section active" id="s0">
+<section class="section" id="s0">
 <h2>① The Problem We're Solving</h2>
 
 <p>Before we touch any math, let's be crystal clear about <strong>what we want the computer to do</strong>.</p>
@@ -573,8 +781,8 @@ SECTION 0 — THE PROBLEM
 </div>
 
 <div class="section-nav">
-<button class="btn-nav" disabled>← Previous</button>
-<button class="btn-nav primary" onclick="showSection(1)">Next: Linear Math Refresher →</button>
+<button class="btn-nav" onclick="showSection(0)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(2)">Next: Linear Math Refresher →</button>
 </div>
 </section>
 
@@ -634,8 +842,8 @@ z = the raw score (we'll transform this later)
 <p>So Alice gets a raw score of <strong>1.1</strong>. But what does 1.1 mean? Is she going to pass? That's the problem with raw scores — they can be anything from −∞ to +∞. We need to convert them into a <strong>probability between 0 and 1</strong>. That's coming in Section 4.</p>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(0)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(2)">Next: Why Not Linear Regression? →</button>
+<button class="btn-nav" onclick="showSection(1)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(3)">Next: Why Not Linear Regression? →</button>
 </div>
 </section>
 
@@ -677,8 +885,8 @@ SECTION 2 — WHY NOT LINEAR REGRESSION
 <p>That magical function exists — and it's called the <strong>Sigmoid function</strong>. Let's meet it in the next section.</p>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(1)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(3)">Next: The Sigmoid Function →</button>
+<button class="btn-nav" onclick="showSection(2)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(4)">Next: The Sigmoid Function →</button>
 </div>
 </section>
 
@@ -741,8 +949,8 @@ Output is always between 0 and 1
 </div>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(2)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(4)">Next: Building the Model →</button>
+<button class="btn-nav" onclick="showSection(3)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(5)">Next: Building the Model →</button>
 </div>
 </section>
 
@@ -806,8 +1014,8 @@ The only unknowns are w₁, w₂, and b — the parameters the model must learn.
 </div>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(3)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(5)">Next: Making Predictions →</button>
+<button class="btn-nav" onclick="showSection(4)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(6)">Next: Making Predictions →</button>
 </div>
 </section>
 
@@ -863,8 +1071,8 @@ SECTION 5 — MAKING PREDICTIONS
 <p class="caption">Green region = model predicts PASS. Red region = model predicts FAIL. Dots are our 8 training students.</p>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(4)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(6)">Next: How the Model Learns →</button>
+<button class="btn-nav" onclick="showSection(5)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(7)">Next: How the Model Learns →</button>
 </div>
 </section>
 
@@ -969,8 +1177,8 @@ Same formula for w₂ (replace x₁ with x₂) and b (no feature multiplication)
 </div>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(5)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(7)">Next: Live Training Demo →</button>
+<button class="btn-nav" onclick="showSection(6)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(8)">Next: Live Training Demo →</button>
 </div>
 </section>
 
@@ -1022,8 +1230,8 @@ SECTION 7 — LIVE TRAINING DEMO
 <p>💥 Too large (e.g., 10): The model "overshoots" and bounces around, loss goes up instead of down</p>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(6)">← Previous</button>
-<button class="btn-nav primary" onclick="showSection(8)">Next: The Full Picture →</button>
+<button class="btn-nav" onclick="showSection(7)">← Previous</button>
+<button class="btn-nav primary" onclick="showSection(9)">Next: The Full Picture →</button>
 </div>
 </section>
 
@@ -1172,7 +1380,7 @@ predict(<span class="num">55</span>, <span class="num">4</span>) <span class="co
 </div>
 
 <div class="section-nav">
-<button class="btn-nav" onclick="showSection(7)">← Previous</button>
+<button class="btn-nav" onclick="showSection(8)">← Previous</button>
 <button class="btn-nav" disabled>You've reached the end! 🎉</button>
 </div>
 </section>
@@ -1181,15 +1389,65 @@ predict(<span class="num">55</span>, <span class="num">4</span>) <span class="co
 // ── NAV ─────────────────────────────────────────
 const sections = document.querySelectorAll('.section');
 const navBtns = document.querySelectorAll('nav button');
+const pageHeader = document.querySelector('header');
+const mainNav = document.getElementById('mainNav');
+const homeSectionsChip = document.getElementById('homeSectionsChip');
+const homeDurationChip = document.getElementById('homeDurationChip');
+const desktopNavQuery = window.matchMedia('(min-width: 901px)');
+
+function updateHomeMeta() {
+const sectionCount = sections.length;
+const minMinutes = Math.round(sectionCount * 3.5);
+const maxMinutes = Math.round(sectionCount * 4.5);
+if (homeSectionsChip) homeSectionsChip.textContent = `${sectionCount} Sections`;
+if (homeDurationChip) homeDurationChip.textContent = `${minMinutes}-${maxMinutes} Minutes`;
+}
+
+function syncNavTooltips() {
+navBtns.forEach((btn) => {
+if (desktopNavQuery.matches) {
+btn.title = btn.textContent.trim();
+} else {
+btn.removeAttribute('title');
+}
+});
+}
+
+if (typeof desktopNavQuery.addEventListener === 'function') {
+desktopNavQuery.addEventListener('change', syncNavTooltips);
+} else if (typeof desktopNavQuery.addListener === 'function') {
+desktopNavQuery.addListener(syncNavTooltips);
+}
+updateHomeMeta();
+syncNavTooltips();
+
+function syncHeaderVisibility() {
+if (!pageHeader) return;
+const atTop = window.scrollY === 0;
+const onHomeSection = sections[0] && sections[0].classList.contains('active');
+const showHeader = atTop && !onHomeSection;
+document.documentElement.style.setProperty('--header-height', `${pageHeader.offsetHeight}px`);
+pageHeader.classList.toggle('header-hidden', !showHeader);
+if (mainNav && desktopNavQuery.matches) {
+mainNav.classList.toggle('nav-under-header', showHeader);
+} else if (mainNav) {
+mainNav.classList.remove('nav-under-header');
+}
+}
+
+window.addEventListener('scroll', syncHeaderVisibility, { passive: true });
+window.addEventListener('resize', syncHeaderVisibility);
+syncHeaderVisibility();
 
 function showSection(i) {
 sections.forEach((s,j) => s.classList.toggle('active', j===i));
 navBtns.forEach((b,j) => b.classList.toggle('active', j===i));
+syncHeaderVisibility();
 window.scrollTo({top:0, behavior:'smooth'});
 // init charts when sections become visible
-if (i===2) drawLinearProblem();
-if (i===3) { drawSigmoid(); updateSigmoidDemo(); }
-if (i===5) { updatePrediction(); drawBoundary(); }
+if (i===3) drawLinearProblem();
+if (i===4) { drawSigmoid(); updateSigmoidDemo(); }
+if (i===6) { updatePrediction(); drawBoundary(); }
 }
 
 // ── SIGMOID MATH ─────────────────────────────────
