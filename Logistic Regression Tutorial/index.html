@@ -719,7 +719,7 @@ SECTION 0 — THE PROBLEM
 </div>
 
 <h3>Our Training Data</h3>
-<p>A <strong>dataset</strong> is just a collection of past examples. Here is our dataset — 8 students whose outcomes we already know. We'll use these examples to "teach" the model.</p>
+<p>A <strong>dataset</strong> is just a collection of past examples. Here is our dataset — 24 students whose outcomes we already know. We'll use these examples to "teach" the model.</p>
 
 <table class="data-table">
 <thead>
@@ -737,8 +737,24 @@ SECTION 0 — THE PROBLEM
 <tr><td>Dave</td><td>50</td><td>3</td><td class="fail">FAIL (0)</td></tr>
 <tr><td>Eve</td><td>85</td><td>7</td><td class="pass">PASS (1)</td></tr>
 <tr><td>Frank</td><td>20</td><td>1</td><td class="fail">FAIL (0)</td></tr>
-<tr><td>Grace</td><td>65</td><td>5</td><td class="pass">PASS (1)</td></tr>
-<tr><td>Hank</td><td>40</td><td>2</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Ivan</td><td>92</td><td>7</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Jane</td><td>88</td><td>6</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Kate</td><td>81</td><td>6</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Leo</td><td>73</td><td>5</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Maya</td><td>68</td><td>6</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Nick</td><td>60</td><td>5</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Olivia</td><td>40</td><td>1</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Pete</td><td>35</td><td>2</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Quinn</td><td>45</td><td>2</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Rosa</td><td>55</td><td>3</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Sam</td><td>25</td><td>1</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Tina</td><td>48</td><td>2</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Uma</td><td>58</td><td>6</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Vic</td><td>62</td><td>4</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Wendy</td><td>70</td><td>3</td><td class="fail">FAIL (0)</td></tr>
+<tr><td>Xander</td><td>78</td><td>4</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Yara</td><td>52</td><td>5</td><td class="pass">PASS (1)</td></tr>
+<tr><td>Zoe</td><td>66</td><td>3</td><td class="pass">PASS (1)</td></tr>
 </tbody>
 </table>
 
@@ -1135,10 +1151,10 @@ Same formula for w₂ (replace x₁ with x₂) and b (no feature multiplication)
 </div>
 
 <h3>One Complete Training Step</h3>
-<p>Let's manually do one gradient descent step with α = 0.01 and our random initial weights (w₁=0.05, w₂=0.2, b=−5), computing the gradient using all 8 students. The math here is just arithmetic — the same formula repeated 8 times and averaged:</p>
+<p>Let's manually do one gradient descent step with α = 0.01 and our random initial weights (w₁=0.05, w₂=0.2, b=−5), computing the gradient using all 24 students. The math here is just arithmetic — the same formula repeated 24 times and averaged:</p>
 
 <div class="worked">
-<div class="step-line"><span class="label">Compute predictions:</span><span class="value">Run all 8 students through current model</span></div>
+<div class="step-line"><span class="label">Compute predictions:</span><span class="value">Run all 24 students through current model</span></div>
 <div class="step-line"><span class="label">Compute errors:</span><span class="value">p − y for each student</span></div>
 <div class="step-line"><span class="label">Average gradient w₁:</span><span class="value">≈ −0.142 (w₁ needs to increase)</span></div>
 <div class="step-line"><span class="label">Average gradient w₂:</span><span class="value">≈ −0.081 (w₂ needs to increase)</span></div>
@@ -1281,9 +1297,15 @@ SECTION 8 — FULL PICTURE
 <span class="comment"># [attendance%, study_hours]</span>
 X = [
 [90, 8], [30, 2], [75, 6], [50, 3],
-[85, 7], [20, 1], [65, 5], [40, 2]
+[85, 7], [20, 1], [92, 7], [88, 6],
+[81, 6], [73, 5], [68, 6], [60, 5],
+[40, 1], [35, 2], [45, 2], [55, 3],
+[25, 1], [48, 2], [58, 6], [62, 4],
+[70, 3], [78, 4], [52, 5], [66, 3]
 ]
-y = [1, 0, 1, 0, 1, 0, 1, 0] <span class="comment"># 1=pass, 0=fail</span>
+y = [1, 0, 1, 0, 1, 0, 1, 1,
+     1, 1, 1, 1, 0, 0, 0, 0,
+     0, 0, 1, 0, 0, 1, 1, 1] <span class="comment"># 1=pass, 0=fail</span>
 
 <span class="comment"># ── Sigmoid function ───────────────────────</span>
 <span class="kw">def</span> <span class="fn">sigmoid</span>(z):
@@ -1702,7 +1724,11 @@ ctx.stroke();
 // Training data points
 const students=[
 [90,8,1,'Alice'],[30,2,0,'Bob'],[75,6,1,'Carol'],[50,3,0,'Dave'],
-[85,7,1,'Eve'],[20,1,0,'Frank'],[65,5,1,'Grace'],[40,2,0,'Hank']
+[85,7,1,'Eve'],[20,1,0,'Frank'],[92,7,1,'Ivan'],[88,6,1,'Jane'],
+[81,6,1,'Kate'],[73,5,1,'Leo'],[68,6,1,'Maya'],[60,5,1,'Nick'],
+[40,1,0,'Olivia'],[35,2,0,'Pete'],[45,2,0,'Quinn'],[55,3,0,'Rosa'],
+[25,1,0,'Sam'],[48,2,0,'Tina'],[58,6,1,'Uma'],[62,4,0,'Vic'],
+[70,3,0,'Wendy'],[78,4,1,'Xander'],[52,5,1,'Yara'],[66,3,1,'Zoe']
 ];
 students.forEach(([att,hrs,label,name])=>{
 ctx.beginPath();
@@ -1756,7 +1782,6 @@ let fitY=[];
 let valX=[];
 let valY=[];
 let trainingDataLoaded=false;
-const trainingDataPath='training_data.json';
 let trainingDataCache=null;
 const lr=0.01;
 let minValImprovementPct=0.05;
@@ -1811,17 +1836,32 @@ labelsBinary(valLabels)
 );
 }
 
-async function getDatasetByKey(datasetKey){
+async function getDatasetByKey(){
 if(trainingDataCache){
 return trainingDataCache;
 }
-const response=await fetch(trainingDataPath);
-if(!response.ok){
-throw new Error(`HTTP ${response.status}`);
-}
-const data=await response.json();
+const data={
+"fitX": [
+[90,8],[30,2],[75,6],[50,3],[85,7],[20,1],
+[92,7],[88,6],[81,6],[73,5],[68,6],[60,5],
+[40,1],[35,2],[45,2],[55,3],[25,1],[48,2],
+[58,6],[62,4],[70,3],[78,4],[52,5],[66,3]
+],
+"fitY": [
+1,0,1,0,1,0,
+1,1,1,1,1,1,
+0,0,0,0,0,0,
+1,0,0,1,1,1
+],
+"valX": [
+[65,5],[40,2],[82,6],[47,3],[72,4],[57,5]
+],
+"valY": [
+1,0,1,0,0,1
+]
+};
 if(!isDatasetValid(data)){
-throw new Error(`Invalid dataset structure in ${trainingDataPath}`);
+throw new Error('Inlined dataset failed validation check.');
 }
 trainingDataCache=data;
 return trainingDataCache;
@@ -1907,8 +1947,8 @@ tableBody.appendChild(tr);
 qualitySummary.textContent=
 `Current dataset has ${(metrics.noiseRatio*100).toFixed(1)}% local label-noise with class balance ${metrics.positives}/${metrics.negatives}.`;
 } catch (error) {
-tableBody.innerHTML='<tr><td colspan="6">Could not load quality report. Run the tutorial from a local web server so JSON files can be fetched.</td></tr>';
-qualitySummary.textContent='Quality report unavailable until datasets load successfully.';
+tableBody.innerHTML='<tr><td colspan="6">Could not load quality report.</td></tr>';
+qualitySummary.textContent='Quality report unavailable.';
 console.error('Quality report error:', error);
 }
 }
@@ -1926,7 +1966,7 @@ await renderQualityReport();
 trainingDataLoaded=false;
 const lossDisplay=document.getElementById('lossDisplay');
 if(lossDisplay){
-lossDisplay.textContent='Failed to load dataset JSON. Run from a local web server and confirm training_data files are present.';
+lossDisplay.textContent='Failed to initialize training data.';
 }
 console.error('Could not load training data:', error);
 }
