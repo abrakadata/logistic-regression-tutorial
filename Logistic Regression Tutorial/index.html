@@ -1161,7 +1161,9 @@ SECTION 7 — LIVE TRAINING DEMO
 <section class="section" id="s7">
 <h2>⑧ Live Training Demo</h2>
 
-<p>Now let's watch the model actually learn. Click the button below to start training. The chart shows how the <strong>loss decreases</strong> as gradient descent runs — the model improving with each step (called an <strong>epoch</strong> — one pass through all the data).</p>
+<p>Now let's watch the model actually learn. Click Start Training to begin. The chart shows how the <strong>training loss decreases</strong> as gradient descent runs — each point is an <strong>epoch</strong> (one full pass through the training data).</p>
+
+<p>You can control <strong>early stopping</strong> with the sliders. <strong>Min val improvement (%)</strong> is the minimum percentage drop in validation loss required to count as real progress each epoch. <strong>Patience (epochs)</strong> is how many epochs in a row we allow below that minimum before stopping. Example: with 0.05% and patience 5, training stops after 5 consecutive epochs where validation loss improves by less than 0.05%, which helps prevent unnecessary training once learning has mostly plateaued.</p>
 
 <button id="startTraining" onclick="startTraining()">▶ Start Training</button>
 
