@@ -1436,7 +1436,8 @@ SECTION 9 — APPENDIX
 </section>
 
 <script>
-// ── NAV ─────────────────────────────────────────
+// ======================================   NAV AND UI LOGIC   ======================================
+
 const sections = document.querySelectorAll('.section');
 const navBtns = document.querySelectorAll('nav button');
 const pageHeader = document.querySelector('header');
@@ -1663,8 +1664,8 @@ const att=parseFloat(document.getElementById('attSlider').value);
 const hrs=parseFloat(document.getElementById('hoursSlider').value);
 document.getElementById('attVal').textContent=att+'%';
 document.getElementById('hoursVal').textContent=hrs+'h';
-// Trained weights
-const w1=0.08, w2=0.30, b=-7.5;
+// Preview model weights fit from current training data
+const w1=demoW1, w2=demoW2, b=demoB;
 const z=w1*att+w2*hrs+b;
 const p=sigmoid(z);
 const pct=Math.round(p*100);
@@ -1685,7 +1686,7 @@ const ctx=c.getContext('2d');
 const W=c.width, H=c.height;
 ctx.clearRect(0,0,W,H);
 
-const w1=0.08, w2=0.30, b=-7.5;
+const w1=demoW1, w2=demoW2, b=demoB;
 const pad={l:80,r:20,t:20,b:45};
 const iW=W-pad.l-pad.r, iH=H-pad.t-pad.b;
 function px(x){return pad.l+x/100*iW;}
@@ -1781,6 +1782,7 @@ let fitX=[];
 let fitY=[];
 let valX=[];
 let valY=[];
+let demoW1=0.08, demoW2=0.30, demoB=-7.5;
 let trainingDataLoaded=false;
 let trainingDataCache=null;
 const lr=0.01;
@@ -1960,8 +1962,13 @@ fitX=data.fitX || [];
 fitY=data.fitY || [];
 valX=data.valX || [];
 valY=data.valY || [];
+fitPreviewModelWeights();
 trainingDataLoaded=true;
 await renderQualityReport();
+if(sections[6] && sections[6].classList.contains('active')){
+updatePrediction();
+drawBoundary();
+}
 } catch (error) {
 trainingDataLoaded=false;
 const lossDisplay=document.getElementById('lossDisplay');
@@ -1980,6 +1987,34 @@ const p=sigmoid(z);
 loss -= y[i]*Math.log(p+1e-9)+(1-y[i])*Math.log(1-p+1e-9);
 });
 return loss/X.length;
+}
+
+function fitPreviewModelWeights(){
+if(!fitX.length || fitX.length!==fitY.length) return;
+let w1=0.05, w2=0.2, b=-5;
+const previewLr=0.01;
+const previewEpochs=2500;
+
+for(let epoch=0;epoch<previewEpochs;epoch++){
+let gw1=0,gw2=0,gb=0;
+const N=fitX.length;
+for(let i=0;i<N;i++){
+const [x1,x2]=fitX[i];
+const z=w1*x1+w2*x2+b;
+const p=sigmoid(z);
+const err=p-fitY[i];
+gw1+=err*x1;
+gw2+=err*x2;
+gb+=err;
+}
+w1-=previewLr*gw1/N;
+w2-=previewLr*gw2/N;
+b-=previewLr*gb/N;
+}
+
+demoW1=w1;
+demoW2=w2;
+demoB=b;
 }
 
 function trainStep(){
