@@ -658,6 +658,7 @@ h2 { font-size: 1.5rem; }
 <button onclick="showSection(7)">How the Model Learns</button>
 <button onclick="showSection(8)">Live Training Demo</button>
 <button onclick="showSection(9)">Full Picture</button>
+<button onclick="showSection(10)">Appendix: Data Quality</button>
 </nav>
 
 <!-- ═══════════════════════════════════════════════
@@ -1370,7 +1371,45 @@ predict(<span class="num">55</span>, <span class="num">4</span>) <span class="co
 
 <div class="section-nav">
 <button class="btn-nav" onclick="showSection(8)">← Previous</button>
-<button class="btn-nav" disabled>You've reached the end! 🎉</button>
+<button class="btn-nav primary" onclick="showSection(10)">Next: Appendix →</button>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+SECTION 9 — APPENDIX
+═══════════════════════════════════════════════ -->
+
+<section class="section" id="s9">
+<h2>⑩ Appendix: Data Quality Report</h2>
+
+<p>This appendix runs a lightweight quality audit on the training dataset used by the live demo.</p>
+
+<table class="data-table text-left" id="qualityTable">
+<thead>
+<tr>
+<th>Rows</th>
+<th>Class Balance (P/N)</th>
+<th>Missing</th>
+<th>Duplicates</th>
+<th>Contradictions</th>
+<th>Noise k=5</th>
+</tr>
+</thead>
+<tbody id="qualityTableBody">
+<tr>
+<td colspan="6">Loading quality report...</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout insight">
+<div class="label">How to Read This</div>
+<p id="qualitySummary" class="m-0">Lower noise and contradiction counts generally improve coefficient stability and interpretability.</p>
+</div>
+
+<div class="section-nav">
+<button class="btn-nav" onclick="showSection(9)">← Previous</button>
+<button class="btn-nav" disabled>End of Tutorial</button>
 </div>
 </section>
 
@@ -1712,20 +1751,13 @@ ctx.fillText('── Decision Boundary', px(5), py(10.5));
 // ── TRAINING DEMO ─────────────────────────────────
 let trainingRunning=false;
 let trainW1=0.05, trainW2=0.2, trainB=-5;
-const fitX=[
-[90,8],[30,2],[75,6],[50,3],[85,7],[20,1],
-[92,7],[88,6],[81,6],[73,5],[68,6],[60,5],
-[40,1],[35,2],[45,2],[55,3],[25,1],[48,2],
-[58,6],[62,4],[70,3],[78,4],[52,5],[66,3]
-];
-const fitY=[
-1,0,1,0,1,0,
-1,1,1,1,1,1,
-0,0,0,0,0,0,
-1,0,0,1,1,1
-];
-const valX=[[65,5],[40,2],[82,6],[47,3],[72,4],[57,5]];
-const valY=[1,0,1,0,0,1];
+let fitX=[];
+let fitY=[];
+let valX=[];
+let valY=[];
+let trainingDataLoaded=false;
+const trainingDataPath='training_data.json';
+let trainingDataCache=null;
 const lr=0.01;
 let minValImprovementPct=0.05;
 let earlyStopPatience=5;
@@ -1746,6 +1778,158 @@ minValImprovementPct=parseFloat(stopPctSlider.value);
 earlyStopPatience=parseInt(patienceSlider.value,10);
 stopPctVal.textContent=`${minValImprovementPct.toFixed(2)}%`;
 patienceVal.textContent=`${earlyStopPatience}`;
+}
+
+function allRowsPositive(rows){
+return rows.every((row)=>
+Array.isArray(row) &&
+row.length===2 &&
+Number.isFinite(row[0]) &&
+Number.isFinite(row[1]) &&
+row[0]>0 &&
+row[1]>0
+);
+}
+
+function isDatasetValid(data){
+if(!data) return false;
+const fitRows=data.fitX || [];
+const fitLabels=data.fitY || [];
+const valRows=data.valX || [];
+const valLabels=data.valY || [];
+const labelsBinary=(arr)=>arr.every((label)=>label===0 || label===1);
+
+return (
+fitRows.length===fitLabels.length &&
+valRows.length===valLabels.length &&
+fitRows.length>0 &&
+valRows.length>0 &&
+allRowsPositive(fitRows) &&
+allRowsPositive(valRows) &&
+labelsBinary(fitLabels) &&
+labelsBinary(valLabels)
+);
+}
+
+async function getDatasetByKey(datasetKey){
+if(trainingDataCache){
+return trainingDataCache;
+}
+const response=await fetch(trainingDataPath);
+if(!response.ok){
+throw new Error(`HTTP ${response.status}`);
+}
+const data=await response.json();
+if(!isDatasetValid(data)){
+throw new Error(`Invalid dataset structure in ${trainingDataPath}`);
+}
+trainingDataCache=data;
+return trainingDataCache;
+}
+
+function calculateNoiseCount(X, y, k=5){
+let noise=0;
+for(let i=0;i<X.length;i++){
+const xi=X[i];
+const distances=[];
+for(let j=0;j<X.length;j++){
+if(i===j) continue;
+const dx=xi[0]-X[j][0];
+const dy=xi[1]-X[j][1];
+distances.push({dist: Math.sqrt(dx*dx + dy*dy), idx: j});
+}
+distances.sort((a,b)=>a.dist-b.dist);
+const neighbors=distances.slice(0, k);
+const posNeighbors=neighbors.reduce((sum, item)=>sum + y[item.idx], 0);
+const majority=posNeighbors >= (k/2) ? 1 : 0;
+if(majority!==y[i]) noise++;
+}
+return noise;
+}
+
+function computeQualityMetrics(data){
+const fitRows=data.fitX || [];
+const fitLabels=data.fitY || [];
+const valRows=data.valX || [];
+const valLabels=data.valY || [];
+const X=fitRows.concat(valRows);
+const y=fitLabels.concat(valLabels);
+
+const missingCount=X.reduce((sum, row)=>sum + (row[0]==null ? 1 : 0) + (row[1]==null ? 1 : 0), 0);
+
+const rowCounts={};
+const contradictionMap={};
+for(let i=0;i<X.length;i++){
+const key=`${X[i][0]}|${X[i][1]}`;
+rowCounts[key]=(rowCounts[key] || 0) + 1;
+if(!contradictionMap[key]) contradictionMap[key]=new Set();
+contradictionMap[key].add(y[i]);
+}
+const uniqueRows=Object.keys(rowCounts).length;
+const duplicateCount=X.length-uniqueRows;
+const contradictionCount=Object.values(contradictionMap).filter((setObj)=>setObj.size>1).length;
+
+const positives=y.reduce((sum, label)=>sum + label, 0);
+const negatives=y.length-positives;
+const noiseCount=calculateNoiseCount(X, y, 5);
+
+return {
+rows: X.length,
+positives,
+negatives,
+missingCount,
+duplicateCount,
+contradictionCount,
+noiseCount,
+noiseRatio: X.length ? noiseCount / X.length : 0
+};
+}
+
+async function renderQualityReport(){
+const tableBody=document.getElementById('qualityTableBody');
+const qualitySummary=document.getElementById('qualitySummary');
+if(!tableBody || !qualitySummary) return;
+
+try {
+const data=await getDatasetByKey();
+const metrics=computeQualityMetrics(data);
+tableBody.innerHTML='';
+const tr=document.createElement('tr');
+tr.innerHTML=`
+<td>${metrics.rows}</td>
+<td>${metrics.positives}/${metrics.negatives}</td>
+<td>${metrics.missingCount}</td>
+<td>${metrics.duplicateCount}</td>
+<td>${metrics.contradictionCount}</td>
+<td>${metrics.noiseCount} (${(metrics.noiseRatio*100).toFixed(1)}%)</td>
+`;
+tableBody.appendChild(tr);
+qualitySummary.textContent=
+`Current dataset has ${(metrics.noiseRatio*100).toFixed(1)}% local label-noise with class balance ${metrics.positives}/${metrics.negatives}.`;
+} catch (error) {
+tableBody.innerHTML='<tr><td colspan="6">Could not load quality report. Run the tutorial from a local web server so JSON files can be fetched.</td></tr>';
+qualitySummary.textContent='Quality report unavailable until datasets load successfully.';
+console.error('Quality report error:', error);
+}
+}
+
+async function loadTrainingData(){
+try {
+const data=await getDatasetByKey();
+fitX=data.fitX || [];
+fitY=data.fitY || [];
+valX=data.valX || [];
+valY=data.valY || [];
+trainingDataLoaded=true;
+await renderQualityReport();
+} catch (error) {
+trainingDataLoaded=false;
+const lossDisplay=document.getElementById('lossDisplay');
+if(lossDisplay){
+lossDisplay.textContent='Failed to load dataset JSON. Run from a local web server and confirm training_data files are present.';
+}
+console.error('Could not load training data:', error);
+}
 }
 
 function computeLoss(w1,w2,b,X,y){
@@ -1855,6 +2039,13 @@ ctx.fillText('Epoch', W/2-16, H-8);
 }
 
 function startTraining(){
+if(!trainingDataLoaded){
+const lossDisplay=document.getElementById('lossDisplay');
+if(lossDisplay){
+lossDisplay.textContent='Training data not loaded yet. Please wait or refresh the page.';
+}
+return;
+}
 if(trainingRunning){
 trainingRunning=false;
 cancelAnimationFrame(animId);
@@ -1936,6 +2127,7 @@ delimiters: [
 ]
 });
 }
+loadTrainingData();
 updateEarlyStopControls();
 });
 </script>
