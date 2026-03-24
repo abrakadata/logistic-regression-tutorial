@@ -1165,6 +1165,21 @@ SECTION 7 — LIVE TRAINING DEMO
 
 <button id="startTraining" onclick="startTraining()">▶ Start Training</button>
 
+<div class="demo-card">
+<h3>Early Stopping Controls</h3>
+<div class="slider-row">
+<label>Min val improvement (%):</label>
+<input type="range" id="stopPctSlider" min="0.01" max="0.5" step="0.01" value="0.05" oninput="updateEarlyStopControls()">
+<span class="val" id="stopPctVal">0.05%</span>
+</div>
+<div class="slider-row">
+<label>Patience (epochs):</label>
+<input type="range" id="patienceSlider" min="2" max="20" step="1" value="5" oninput="updateEarlyStopControls()">
+<span class="val" id="patienceVal">5</span>
+</div>
+<p class="caption">Training stops when validation loss improvement stays below the threshold for the chosen patience.</p>
+</div>
+
 <canvas id="trainingChart" width="700" height="220"></canvas>
 
 <div id="lossDisplay">Press Start to begin training...</div>
@@ -1192,7 +1207,7 @@ SECTION 7 — LIVE TRAINING DEMO
 
 <div class="callout">
 <div class="label">📖 New Term: Epoch</div>
-<p class="m-0">An <strong>epoch</strong> is one complete pass through the entire training dataset. If we run 30000 epochs, the model looks at all 8 students 30000 times, each time updating its weights slightly. More epochs generally means better learning, up to a point.</p>
+<p class="m-0">An <strong>epoch</strong> is one complete pass through the training dataset. In this demo, training stops automatically when validation loss improvement stays below 0.05% for 5 consecutive epochs.</p>
 </div>
 
 <h3>What Happens If the Learning Rate (α) Is Wrong?</h3>
@@ -1695,32 +1710,52 @@ ctx.fillText('── Decision Boundary', px(5), py(10.5));
 // ── TRAINING DEMO ─────────────────────────────────
 let trainingRunning=false;
 let trainW1=0.05, trainW2=0.2, trainB=-5;
-const trainX=[[90,8],[30,2],[75,6],[50,3],[85,7],[20,1],[65,5],[40,2]];
-const trainY=[1,0,1,0,1,0,1,0];
+const fitX=[[90,8],[30,2],[75,6],[50,3],[85,7],[20,1]];
+const fitY=[1,0,1,0,1,0];
+const valX=[[65,5],[40,2]];
+const valY=[1,0];
 const lr=0.01;
+let minValImprovementPct=0.05;
+let earlyStopPatience=5;
 let lossHistory=[];
 let epochNum=0;
 let animId=null;
+let valNoImproveStreak=0;
+let prevValLoss=null;
 
-function computeLoss(w1,w2,b){
+function updateEarlyStopControls(){
+const stopPctSlider=document.getElementById('stopPctSlider');
+const patienceSlider=document.getElementById('patienceSlider');
+const stopPctVal=document.getElementById('stopPctVal');
+const patienceVal=document.getElementById('patienceVal');
+if(!stopPctSlider||!patienceSlider||!stopPctVal||!patienceVal) return;
+
+minValImprovementPct=parseFloat(stopPctSlider.value);
+earlyStopPatience=parseInt(patienceSlider.value,10);
+stopPctVal.textContent=`${minValImprovementPct.toFixed(2)}%`;
+patienceVal.textContent=`${earlyStopPatience}`;
+}
+
+function computeLoss(w1,w2,b,X,y){
 let loss=0;
-trainX.forEach(([x1,x2],i)=>{
+X.forEach(([x1,x2],i)=>{
 const z=w1*x1+w2*x2+b;
 const p=sigmoid(z);
-loss -= trainY[i]*Math.log(p+1e-9)+(1-trainY[i])*Math.log(1-p+1e-9);
+loss -= y[i]*Math.log(p+1e-9)+(1-y[i])*Math.log(1-p+1e-9);
 });
-return loss/trainX.length;
+return loss/X.length;
 }
 
 function trainStep(){
 let gw1=0,gw2=0,gb=0;
-const N=trainX.length;
-trainX.forEach(([x1,x2],i)=>{
+const N=fitX.length;
+for(let i=0;i<N;i++){
+const [x1,x2]=fitX[i];
 const z=trainW1*x1+trainW2*x2+trainB;
 const p=sigmoid(z);
-const err=p-trainY[i];
+const err=p-fitY[i];
 gw1+=err*x1; gw2+=err*x2; gb+=err;
-});
+}
 trainW1-=lr*gw1/N;
 trainW2-=lr*gw2/N;
 trainB-=lr*gb/N;
@@ -1814,30 +1849,63 @@ cancelAnimationFrame(animId);
 document.getElementById('startTraining').textContent='▶ Restart Training';
 return;
 }
+updateEarlyStopControls();
 // Reset
 trainW1=0.05; trainW2=0.2; trainB=-5;
 lossHistory=[]; epochNum=0;
+valNoImproveStreak=0;
+prevValLoss=null;
 trainingRunning=true;
 document.getElementById('startTraining').textContent='⏸ Pause';
 
 function step(){
-if(!trainingRunning||epochNum>=30000) {
+if(!trainingRunning) {
 trainingRunning=false;
 document.getElementById('startTraining').textContent='▶ Restart Training';
 return;
 }
+
+let latestTrainLoss=0;
+let latestValLoss=0;
+let shouldStopEarly=false;
+
 for(let k=0;k<5;k++){
 trainStep();
 epochNum++;
-const loss=computeLoss(trainW1,trainW2,trainB);
-lossHistory.push(loss);
+latestTrainLoss=computeLoss(trainW1,trainW2,trainB,fitX,fitY);
+latestValLoss=computeLoss(trainW1,trainW2,trainB,valX,valY);
+lossHistory.push(latestTrainLoss);
+
+if(prevValLoss!==null){
+const improvementPct=((prevValLoss-latestValLoss)/Math.max(prevValLoss,1e-9))*100;
+if(improvementPct<minValImprovementPct){
+valNoImproveStreak++;
+} else {
+valNoImproveStreak=0;
+}
+if(valNoImproveStreak>=earlyStopPatience){
+shouldStopEarly=true;
+}
+}
+prevValLoss=latestValLoss;
+
+if(shouldStopEarly){
+break;
+}
 }
 drawLossChart();
 document.getElementById('w1disp').textContent=trainW1.toFixed(4);
 document.getElementById('w2disp').textContent=trainW2.toFixed(4);
 document.getElementById('bdisp').textContent=trainB.toFixed(4);
+const statusPrefix=shouldStopEarly ? 'Early stop reached' : `Epoch ${epochNum}`;
 document.getElementById('lossDisplay').textContent=
-`Epoch ${epochNum}/30000 — Loss: ${lossHistory[lossHistory.length-1].toFixed(4)}`;
+`${statusPrefix} — Train Loss: ${latestTrainLoss.toFixed(4)} | Val Loss: ${latestValLoss.toFixed(4)} | Min Δ: ${minValImprovementPct.toFixed(2)}% | Val stagnation: ${valNoImproveStreak}/${earlyStopPatience}`;
+
+if(shouldStopEarly){
+trainingRunning=false;
+document.getElementById('startTraining').textContent='▶ Restart Training';
+return;
+}
 animId=requestAnimationFrame(step);
 }
 animId=requestAnimationFrame(step);
@@ -1856,6 +1924,7 @@ delimiters: [
 ]
 });
 }
+updateEarlyStopControls();
 });
 </script>
 
